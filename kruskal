@@ -1,0 +1,135 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace ConsoleApp5
+{
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+
+
+int[,] graph = {
+    { 0, 10, 6, 5 },
+    { 10, 0, 0, 15 },
+    { 6, 0, 0, 4 },
+    { 5, 15, 4, 0 }
+};
+
+
+
+            Tuple<List<Tuple<int, int>>, int> result = Kruskal.MinimumSpanningTree(graph);
+
+         List<Tuple<int, int>> minimumSpanningTree = result.Item1;
+         int mstCost = result.Item2;
+
+         Console.WriteLine("Minimum Spanning Tree:");
+         foreach (var edge in minimumSpanningTree)
+            {
+                Console.WriteLine($"{edge.Item1} - {edge.Item2}");
+            }
+
+            Console.WriteLine($"Cost: {mstCost}");
+
+
+
+
+        }
+    }
+
+
+
+public class Kruskal
+    {
+        private static int[] parent;
+        private static int[] rank;
+
+        public static Tuple<List<Tuple<int, int>>, int> MinimumSpanningTree(int[,] graph)
+        {
+            int numVertices = graph.GetLength(0);
+            parent = new int[numVertices];
+            rank = new int[numVertices];
+            int mstCost = 0;
+
+       
+            for (int i = 0; i < numVertices; i++)
+            {
+                parent[i] = i;
+            }
+
+            List<Tuple<int, int>> minimumSpanningTree = new List<Tuple<int, int>>();
+            List<Tuple<int, int, int>> edges = new List<Tuple<int, int, int>>();
+
+            // Add all the edges to a list
+            for (int i = 0; i < numVertices; i++)
+            {
+                for (int j = 0; j < numVertices; j++)
+                {
+                    if (i < j && graph[i, j] != 0)
+                    {
+                        edges.Add(Tuple.Create(i, j, graph[i, j]));
+                    }
+                }
+            }
+
+            // Sort the edges by weight
+            edges.Sort((a, b) => a.Item3 - b.Item3);
+
+            foreach (var edge in edges)
+            {
+                int u = edge.Item1;
+                int v = edge.Item2;
+                int weight = edge.Item3;
+
+                // Check if adding this edge creates a cycle
+                if (Find(u) != Find(v))
+                {
+                    // If not ..  add it to the minimum spanning tree and update the cost
+                    minimumSpanningTree.Add(Tuple.Create(u, v));
+                    mstCost += weight;
+                    Union(u, v);
+                }
+            }
+
+            return Tuple.Create(minimumSpanningTree, mstCost);
+        }
+
+        private static void Union(int x, int y)
+        {
+            int xRoot = Find(x);
+            int yRoot = Find(y);
+
+            if (rank[xRoot] < rank[yRoot])
+            {
+                parent[xRoot] = yRoot;
+            }
+            else if (rank[yRoot] < rank[xRoot])
+            {
+                parent[yRoot] = xRoot;
+            }
+            else
+            {
+                parent[yRoot] = xRoot;
+                rank[xRoot]++;
+            }
+        }
+
+        private static int Find(int x)
+        {
+            if (parent[x] != x)
+            {
+                parent[x] = Find(parent[x]);
+            }
+
+            return parent[x];
+        }
+    }
+
+
+
+
+
+}
